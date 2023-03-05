@@ -4,6 +4,7 @@ from fastapi.params import Body
 from pydantic import BaseModel
 from random import randrange
 
+
 app = FastAPI()
 
 class Post(BaseModel):
@@ -11,6 +12,8 @@ class Post(BaseModel):
     content: str
     published: bool = True
     rating: Optional[int] = None
+
+
 
 my_posts = [{"title":"title of post 1", "content": "content of post 1", "id": 1}, {"title":"favourite foods", "content": "I like pizza", "id": 2}]
 
