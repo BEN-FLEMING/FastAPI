@@ -90,13 +90,15 @@ def get_latest_post():
 @app.delete("/posts/{id}", status_code=status.HTTP_204_NO_CONTENT)
 def delete_post(id: int):
 
+    cursor.execute("""DELETE FROM posts WHERE id = %s returning *""", (str(id)))
 
-    index = find_index_post(id)
+    deleted_post = cursor.fetchone()
 
-    if index == None:
-        raise HTTPException(status_code=status.HTTP_204_NO_CONTENT, detail=f"post with id: {id} does not exist")
+    conn.commit()
 
-    my_posts.pop(index)
+    if deleted_post == None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"post with id: {id} does not exist")
+
     return Response(status_code=status.HTTP_204_NO_CONTENT)
 
 
