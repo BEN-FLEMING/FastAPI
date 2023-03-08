@@ -1,13 +1,14 @@
 from typing import Optional
-from fastapi import FastAPI, Response, status, HTTPException
+from fastapi import FastAPI, Response, status, HTTPException, Depends
 from fastapi.params import Body
 from pydantic import BaseModel
 from random import randrange
 import psycopg2
 from psycopg2.extras import RealDictCursor
 import time
-from . import models
-from . import engine, SessionLocal
+from sqlalchemy.orm import Session
+from app.models import models
+from app.database import engine, SessionLocal
 
 models.Base.metadata.create_all(bind=engine)
 
@@ -60,6 +61,10 @@ def find_index_post(id):
 @app.get("/")
 async def root():
     return {"message": "I can write APIs!!!"}
+
+@app.get("sqlalchemy")
+def test_posts(db: Session = Depends(get_db)):
+    return {"status": "success"}
 
 #the decorator forces it to act as an apis - get request to API
 #HTTP methods for the main methods
