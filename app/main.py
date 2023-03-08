@@ -6,8 +6,20 @@ from random import randrange
 import psycopg2
 from psycopg2.extras import RealDictCursor
 import time
+from . import models
+from . import engine, SessionLocal
+
+models.Base.metadata.create_all(bind=engine)
 
 app = FastAPI()
+
+# Dependency every time we get request - we open a session and then close it out - this is much more efficient 
+def get_db():
+    db = SessionLocal()
+    try:
+        yield db
+    finally:
+        db.close()
 
 class Post(BaseModel):
     title: str
@@ -85,7 +97,7 @@ def get_post(id: int):
 @app.get("/posts/latest")
 def get_latest_post():
     my_posts [len(my_posts)-1]
-    return {"detail": post}
+    return {"detail": my_posts}
 
 @app.delete("/posts/{id}", status_code=status.HTTP_204_NO_CONTENT)
 def delete_post(id: int):
@@ -104,14 +116,17 @@ def delete_post(id: int):
 
 @app.put("/posts/{id}")
 def update_post(id: int, post: Post):
+
+    #sending postgres code using postgres driver
     
-    index = find_index_post(id)
+    cursor.execute("""UPDATE posts SET title = %s, content = %s, published = %s WHERE id = %s returning *""", 
+    (post.title, post.content, post.published, str(id)))
 
-    if index == None:
-        raise HTTPException(status_code=status.HTTP_204_NO_CONTENT, detail=f"post with id: {id} does not exist")
+    updated_post = cursor.fetchone()
 
-    post_dict = post.dict()
-    post_dict['id'] = id
-    my_posts[index] = post_dict
+    conn.commit()
 
-    return{"data": post_dict} 
+    if updated_post == None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"post with id: {id} does not exist")
+
+    return{"data": updated_post} 
