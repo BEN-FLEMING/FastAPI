@@ -11,4 +11,4 @@ class Post(Base):
 
     content = Column(String, nullable=False)
 
-    published = Column(Boolean, default=True)
+    published = Column(Boolean, server_default='TRUE', nullable=False)

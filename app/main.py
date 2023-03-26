@@ -7,20 +7,14 @@ import psycopg2
 from psycopg2.extras import RealDictCursor
 import time
 from sqlalchemy.orm import Session
-from app.models import models
-from app.database import engine, SessionLocal
+from . import models
+from .database import engine, get_db
 
 models.Base.metadata.create_all(bind=engine)
 
 app = FastAPI()
 
-# Dependency every time we get request - we open a session and then close it out - this is much more efficient 
-def get_db():
-    db = SessionLocal()
-    try:
-        yield db
-    finally:
-        db.close()
+
 
 class Post(BaseModel):
     title: str
@@ -62,7 +56,7 @@ def find_index_post(id):
 async def root():
     return {"message": "I can write APIs!!!"}
 
-@app.get("sqlalchemy")
+@app.get("/sqlalchemy")
 def test_posts(db: Session = Depends(get_db)):
     return {"status": "success"}
 
