@@ -58,7 +58,9 @@ async def root():
 
 @app.get("/sqlalchemy")
 def test_posts(db: Session = Depends(get_db)):
-    return {"status": "success"}
+    
+    posts = db.query(models.Post).all()
+    return {"data": posts}
 
 #the decorator forces it to act as an apis - get request to API
 #HTTP methods for the main methods
